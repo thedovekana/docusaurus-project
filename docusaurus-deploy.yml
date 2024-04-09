@@ -1,0 +1,44 @@
+---
+- name: Docusaurus deployment playbook
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Install Nginx (Debian)
+      apt:
+        name: nginx
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Install Nginx (RedHat)
+      yum:
+        name: nginx
+        state: present
+      when: ansible_os_family == 'RedHat'
+
+    - name: Start Nginx service and enable it on boot
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Remove default Nginx index.html file
+      file:
+        path: /usr/share/nginx/html/index.html
+        state: absent
+
+    - name: Unzip archive
+      unarchive:
+        src: /home/ansible/*.zip 
+        dest: /tmp/
+
+
+    - name: Copy contents of directory
+      synchronize:
+        src: /tmp/build/  
+        dest: /usr/share/nginx/html/  
+        recursive: yes    # Pour copier récursivement tout le contenu du répertoire source
+
+    - name: Start Nginx service restarted
+      service:
+        name: nginx
+        state: restarted
