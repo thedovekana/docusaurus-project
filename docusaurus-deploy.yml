@@ -28,7 +28,7 @@
 
     - name: Unzip archive
       unarchive:
-        src: /home/ansible/*.zip 
+        src: $PWD/build.tar.zip 
         dest: /tmp/
 
 
