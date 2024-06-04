@@ -1,6 +1,6 @@
 ---
 - name: Docusaurus deployment playbook
-  hosts: webservers
+  hosts: servers
   become: yes
   tasks:
     - name: Install Nginx (Debian)
