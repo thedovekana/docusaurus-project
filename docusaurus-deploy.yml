@@ -1,44 +1,65 @@
----
-- name: Docusaurus deployment playbook
-  hosts: servers
-  become: yes
-  tasks:
-    - name: Install Nginx (Debian)
-      apt:
-        name: nginx
-        state: present
-      when: ansible_os_family == 'Debian'
-
-    - name: Install Nginx (RedHat)
-      yum:
-        name: nginx
-        state: present
-      when: ansible_os_family == 'RedHat'
-
-    - name: Start Nginx service and enable it on boot
-      service:
-        name: nginx
-        state: started
-        enabled: yes
-
-    - name: Remove default Nginx index.html file
-      file:
-        path: /usr/share/nginx/html/index.html
-        state: absent
-
-    - name: Unzip archive
-      unarchive:
-        src: $PWD/build.tar.zip 
-        dest: /tmp/
-
-
-    - name: Copy contents of directory
-      synchronize:
-        src: /tmp/build/  
-        dest: /usr/share/nginx/html/  
-        recursive: yes    # Pour copier récursivement tout le contenu du répertoire source
-
-    - name: Start Nginx service restarted
-      service:
-        name: nginx
-        state: restarted
+---                                                                                                                    
+- name: Docusaurus deployment playbook                                                                                 
+  hosts: gospedia-node                                                                                                       
+  become: yes                                                                                                          
+  tasks:                                                                                                               
+    - name: Install Nginx (Debian)                                                                                     
+      apt:                                                                                                             
+        name: nginx                                                                                                    
+        state: present                                                                                                 
+      when: ansible_os_family == 'Debian'                                                                              
+                                                                                                                       
+    - name: Install Nginx (RedHat)                                                                                     
+      yum:                                                                                                             
+        name: nginx                                                                                                    
+        state: present                                                                                                 
+      when: ansible_os_family == 'RedHat'                                                                              
+                                                                                                                       
+    - name: Start Nginx service and enable it on boot                                                                  
+      service:                                                                                                         
+        name: nginx                                                                                                    
+        state: started                                                                                                 
+        enabled: yes                                                                                                   
+                                                                                                                       
+    - name: Remove default Nginx files                                                                                 
+      file:                                                                                                            
+        path: /usr/share/nginx/html/*                                                                                  
+        state: absent                                                                                                  
+        force: yes                                                                                                     
+                                                                                                                       
+    - name: Get the current date                                                                                       
+      command: date +"%Y-%m-%d"                                                                                        
+      register: current_date                                                                                           
+      changed_when: false                                                                                              
+                                                                                                                       
+                                                                                                                       
+    - name: Rename the last build                                                                                      
+      command: mv /home/vagrant/build.tar.gz /home/vagrant/build.tar.gz_{{ current_date.stdout }}                      
+                                                                                                                       
+    - name: Copy artifact                                                                                              
+      copy:                                                                                                            
+        src: /home/vagrant/build.tar.gz                                                                                
+        dest: /home/vagrant/build.tar.gz                                                                               
+                                                                                                                       
+    - name: Remove the last unarchived build directory                                                                 
+      file:                                                                                                            
+        path: /tmp/*                                                                                                   
+        state: absent                                                                                                  
+        force: yes                                                                                                     
+                                                                                                                       
+    - name: Unzip archive                                                                                              
+      unarchive:                                                                                                       
+        src: /home/vagrant/build.tar.gz                                                                                
+        dest: /tmp/                                                                                                    
+        remote_src: true                                                                                               
+                                                                                                                       
+    - name:                                                                                                            
+      copy:                                                                                                            
+        src: /tmp/build/                                                                                               
+        dest: /usr/share/nginx/html/                                                                                   
+        remote_src: true                                                                                               
+                                                                                                                       
+    - name: Start Nginx service restarted                                                                              
+      service:                                                                                                         
+        name: nginx                                                                                                    
+        state: restarted          
