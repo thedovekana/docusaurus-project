@@ -3,23 +3,23 @@
   hosts: gospedia-node                                                                                                       
   become: yes                                                                                                          
   tasks:                                                                                                               
-    - name: Install Nginx (Debian)                                                                                     
-      apt:                                                                                                             
-        name: nginx                                                                                                    
-        state: present                                                                                                 
-      when: ansible_os_family == 'Debian'                                                                              
+   #- name: Install Nginx (Debian)                                                                                     
+   #  apt:                                                                                                             
+   #    name: nginx                                                                                                    
+   #     state: present                                                                                                 
+   #  when: ansible_os_family == 'Debian'                                                                              
                                                                                                                        
-    - name: Install Nginx (RedHat)                                                                                     
-      yum:                                                                                                             
-        name: nginx                                                                                                    
-        state: present                                                                                                 
-      when: ansible_os_family == 'RedHat'                                                                              
+   # - name: Install Nginx (RedHat)                                                                                     
+   #   yum:                                                                                                             
+   #     name: nginx                                                                                                    
+   #     state: present                                                                                                 
+   #   when: ansible_os_family == 'RedHat'                                                                              
                                                                                                                        
-    - name: Start Nginx service and enable it on boot                                                                  
-      service:                                                                                                         
-        name: nginx                                                                                                    
-        state: started                                                                                                 
-        enabled: yes                                                                                                   
+   # - name: Start Nginx service and enable it on boot                                                                  
+   #  service:                                                                                                         
+   #    name: nginx                                                                                                    
+   #     state: started                                                                                                 
+   #     enabled: yes                                                                                                   
                                                                                                                        
     - name: Remove default Nginx files                                                                                 
       file:                                                                                                            
