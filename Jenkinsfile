@@ -11,7 +11,6 @@ pipeline {
             steps {
                 sh '/usr/bin/npm install '
                 sh '/usr/bin/npm run build'
-                sh 'mv build.tar.gz build.tar.gz_$(date +"%Y-%m-%d")'
                 sh 'tar -czvf build.tar.gz build'
             }
         }
