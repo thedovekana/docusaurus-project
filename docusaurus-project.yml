@@ -1,0 +1,71 @@
+- name: Docusaurus deployment playbook
+  hosts: gospedia-node
+  become: yes
+  tasks:
+    # - name: Install Nginx (Debian)
+    #   apt:
+    #     name: nginx
+    #     state: present
+    #   when: ansible_os_family == 'Debian'
+
+    # - name: Install Nginx (RedHat)
+    #   yum:
+    #     name: nginx
+    #     state: present
+    #   when: ansible_os_family == 'RedHat'
+
+    # - name: Start Nginx service and enable it on boot
+    #   service:
+    #     name: nginx
+    #     state: started
+    #     enabled: yes
+
+    - name: Remove default Nginx files
+      file:
+        path: /usr/share/nginx/html/*
+        state: absent
+        force: yes
+
+    - name: Get the current date
+      command: date +"%Y-%m-%d"
+      register: current_date
+      changed_when: false
+
+    - name: Check if build.tar.gz exists
+      stat:
+        path: /home/vagrant/build.tar.gz
+      register: build_tar_gz
+
+    - name: Rename the last build on the remote server if it exists
+      command: mv /home/vagrant/build.tar.gz /home/vagrant/build.tar.gz_{{ current_date.stdout }}
+      when: build_tar_gz.stat.exists
+      ignore_errors: yes
+
+    - name: Copy artifact
+      copy:
+        src: /home/vagrant/build.tar.gz
+        dest: /home/vagrant/build.tar.gz
+
+    - name: Remove the last unarchived build directory
+      file:
+        path: /tmp/*
+        state: absent
+        force: yes
+
+    - name: Unzip archive
+      unarchive:
+        src: /home/vagrant/build.tar.gz
+        dest: /tmp/
+        remote_src: true
+
+    - name: Copy unzipped build to Nginx directory
+      copy:
+        src: /tmp/build/
+        dest: /usr/share/nginx/html/
+        remote_src: true
+
+    - name: Restart Nginx service
+      service:
+        name: nginx
+        state: restarted
+
